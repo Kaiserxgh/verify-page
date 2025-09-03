@@ -1,184 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email Verification</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      background: #FFE57F;
-      color: #333;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .container {
-      background: white;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      max-width: 400px;
-      width: 100%;
-    }
-
-    h1 { 
-      margin-bottom: 20px;
-      font-size: 28px;
-    }
-
-    p { 
-      font-size: 16px; 
-      margin-bottom: 20px;
-      line-height: 1.5;
-      color: #666;
-    }
-
-    .success { color: #4CAF50; }
-    .error { color: #f44336; }
-
-    .button {
-      display: inline-block;
-      text-decoration: none;
-      color: #fff;
-      background-color: #4CAF50;
-      padding: 15px 30px;
-      border-radius: 25px;
-      font-weight: bold;
-      margin: 10px;
-      transition: background-color 0.3s;
-    }
-
-    .button:hover { background-color: #45a049; }
-    .button.secondary {
-      background-color: #FF8C00;
-    }
-    .button.secondary:hover { background-color: #e67e00; }
-
-    .loading {
-      display: inline-block;
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #4CAF50;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 20px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .debug-info {
-      margin-top: 30px;
-      padding: 15px;
-      background-color: #f8f9fa;
-      border-radius: 8px;
-      font-size: 12px;
-      text-align: left;
-      color: #666;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <div id="message">
-      <div class="loading"></div>
-      <h1>Verifying...</h1>
-      <p>Please wait while we verify your email.</p>
-    </div>
-
-    <!-- Debug info -->
-    <div id="debug-info" class="debug-info" style="display: none;">
-      <strong>Debug Information:</strong><br>
-      <div id="debug-content"></div>
-    </div>
-  </div>
-
-  <script>
-    // Function to parse URL parameters
-    function getUrlParams() {
-      const params = new URLSearchParams(window.location.search);
-      const hash = window.location.hash.substring(1);
-      const hashParams = new URLSearchParams(hash);
-
-      const allParams = {};
-      for (const [key, value] of params) allParams[key] = value;
-      for (const [key, value] of hashParams) allParams[key] = value;
-      return allParams;
-    }
-
-    // Show debug information
-    function showDebugInfo(params) {
-      const debugContent = document.getElementById('debug-content');
-      const debugInfo = document.getElementById('debug-info');
-      let debugText = `URL: ${window.location.href}<br><br>`;
-      debugText += `Parameters found:<br>`;
-      if (Object.keys(params).length === 0) {
-        debugText += `No parameters found<br>`;
-      } else {
-        for (const [key, value] of Object.entries(params)) {
-          debugText += `${key}: ${value}<br>`;
-        }
-      }
-      debugContent.innerHTML = debugText;
-      debugInfo.style.display = 'block';
-    }
-
-    // Attempt deep link to mobile app
-    function attemptDeepLink() {
-      window.location.href = "mobile://verify";
-    }
-
-    // Main verification logic
-    function handleVerification() {
-      const params = getUrlParams();
-
-      // Show debug info
-      showDebugInfo(params);
-
-      const token = params.access_token || params.token || params.confirmation_token || params.recovery_token;
-      const type = params.type;
-      const error = params.error || params.error_description;
-      const messageDiv = document.getElementById('message');
-
-      if (error) {
-        messageDiv.innerHTML = `
-          <h1 class="error">Verification Failed</h1>
-          <p>There was an error verifying your email: ${error}</p>
-          <a href="#" class="button secondary" onclick="window.close()">Close</a>
-        `;
-      } else if (token || type === 'signup') {
-        messageDiv.innerHTML = `
-          <h1 class="success">Email Verified! 🎉</h1>
-          <p>Your email has been successfully verified. You can now log in to your account.</p>
-          <a href="#" class="button" onclick="attemptDeepLink()">Open App</a>
-          <a href="#" class="button secondary" onclick="window.close()">Close</a>
-        `;
-        setTimeout(() => attemptDeepLink(), 3000);
-      } else {
-        messageDiv.innerHTML = `
-          <h1 class="error">Invalid Link</h1>
-          <p>This verification link is invalid or has expired. Please try registering again or request a new verification email.</p>
-          <a href="#" class="button secondary" onclick="window.close()">Close</a>
-        `;
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', handleVerification);
-    if (document.readyState !== 'loading') handleVerification();
-  </script>
-
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Email Verification</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                margin: 0;
+                background: #FFE57F;
+                color: #333;
+                text-align: center;
+                padding: 20px;
+            }
+            .container {
+                background: white;
+                padding: 40px;
+                border-radius: 20px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                max-width: 400px;
+                width: 100%;
+            }
+            h1 {
+                margin-bottom: 20px;
+                color: #333;
+                font-size: 28px;
+            }
+            p {
+                font-size: 16px;
+                margin-bottom: 20px;
+                line-height: 1.5;
+                color: #666;
+            }
+            .success {
+                color: #4CAF50;
+            }
+            .error {
+                color: #f44336;
+            }
+            .button {
+                display: inline-block;
+                text-decoration: none;
+                color: #fff;
+                background-color: #4CAF50;
+                padding: 15px 30px;
+                border-radius: 25px;
+                font-weight: bold;
+                margin: 10px;
+                transition: background-color 0.3s;
+            }
+            .button:hover {
+                background-color: #45a049;
+            }
+            .button.secondary {
+                background-color: #FF8C00;
+            }
+            .button.secondary:hover {
+                background-color: #e67e00;
+            }
+            .loading {
+                display: inline-block;
+                width: 40px;
+                height: 40px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #4CAF50;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin: 20px;
+            }
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+            .debug-info {
+                margin-top: 30px;
+                padding: 15px;
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                font-size: 12px;
+                text-align: left;
+                color: #666;
+                max-height: 200px;
+                overflow-y: auto;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div id="message">
+                <div class="loading"></div>
+                <h1>Verifying...</h1>
+                <p>Please wait while we verify your email.</p>
+            </div>
+            <!-- Debug info (remove in production) -->
+            <div id="debug-info" class="debug-info" style="display: none">
+                <strong>Debug Information:</strong><br />
+                <div id="debug-content"></div>
+            </div>
+        </div>
+        <script>
+            // Function to parse URL parameters function getUrlParams() { const params = new URLSearchParams(window.location.search); const hash = window.location.hash.substring(1); const hashParams = new URLSearchParams(hash); // Combine both query params and hash params const allParams = {}; for (const [key, value] of params) { allParams[key] = value; } for (const [key, value] of hashParams) { allParams[key] = value; } return allParams; } // Function to show debug information function showDebugInfo(params) { const debugContent = document.getElementById('debug-content'); const debugInfo = document.getElementById('debug-info'); let debugText = URL: ${window.location.href}<br><br>; debugText += Parameters found:<br>; if (Object.keys(params).length === 0) { debugText += No parameters found<br>; } else { for (const [key, value] of Object.entries(params)) { debugText += ${key}: ${value}<br>; } } debugContent.innerHTML = debugText; debugInfo.style.display = 'block'; } // Function to attempt deep link function attemptDeepLink() { try { // Try to open the mobile app window.location.href = "mobile://verify"; // Fallback - if the app doesn't open within 2 seconds, // assume it's not installed and show web fallback setTimeout(() => { console.log("Deep link attempt completed"); }, 2000); } catch (error) { console.error("Deep link failed:", error); } } // Main verification logic function handleVerification() { const params = getUrlParams(); // Show debug info (remove in production) showDebugInfo(params); // Check for various possible parameters that Supabase might send const token = params.access_token || params.token || params.confirmation_token || params.recovery_token; const type = params.type; const error = params.error || params.error_description; if (error) { // Handle error case document.getElementById('message').innerHTML = <h1 class="error">Verification Failed</h1> <p>There was an error verifying your email: ${error}</p> <a href="#" class="button secondary" onclick="window.close()">Close</a> ; return; } if (token) { // Success case document.getElementById('message').innerHTML = <h1 class="success">Email Verified! 🎉</h1> <p>Thank you for verifying your email address. Your account is now active!</p> <a href="#" class="button" onclick="attemptDeepLink()">Open App</a> <a href="#" class="button secondary" onclick="window.close()">Close</a> ; // Auto-redirect after 3 seconds setTimeout(() => { attemptDeepLink(); }, 3000); } else if (type === 'signup') { // Handle signup confirmation document.getElementById('message').innerHTML = <h1 class="success">Email Verified! 🎉</h1> <p>Your email has been successfully verified. You can now log in to your account.</p> <a href="#" class="button" onclick="attemptDeepLink()">Open App</a> <a href="#" class="button secondary" onclick="window.close()">Close</a> ; setTimeout(() => { attemptDeepLink(); }, 3000); } else { // No valid parameters found document.getElementById('message').innerHTML = <h1 class="error">Invalid Link</h1> <p>This verification link is invalid or has expired. Please try registering again or request a new verification email.</p> <a href="#" class="button secondary" onclick="window.close()">Close</a> ; } } // Run verification when page loads document.addEventListener('DOMContentLoaded', handleVerification); // Also run immediately in case DOMContentLoaded already fired if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', handleVerification); } else { handleVerification(); }
+        </script>
+    </body>
 </html>
