@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #FFE57F;
+      color: #333;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 { margin-bottom: 10px; }
+    p { font-size: 16px; margin-bottom: 20px; }
+    a {
+      text-decoration: none;
+      color: #fff;
+      background-color: #4CAF50;
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Email Verified! 🎉</h1>
+  <p>Thank you for verifying your email. You can now return to the app to log in.</p>
+  <a href="mobile://verify">Open App</a>
+
+  <script>
+    // Optional: read token from URL
+    const params = new URLSearchParams(window.location.search);
+    const access_token = params.get('access_token');
+    if (access_token) {
+      console.log("Verification token:", access_token);
+      // You can also call Supabase client here to auto-log the user in if desired
+    }
+  </script>
+
+</body>
+</html>
