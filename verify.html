@@ -76,26 +76,81 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    .debug-info {
+      margin-top: 30px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      font-size: 12px;
+      text-align: left;
+      color: #666;
+      max-height: 200px;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body>
 
-  <div class="container" id="message">
-    <div class="loading"></div>
-    <h1>Verifying...</h1>
-    <p>Please wait while we verify your email.</p>
+  <div class="container">
+    <div id="message">
+      <div class="loading"></div>
+      <h1>Verifying...</h1>
+      <p>Please wait while we verify your email.</p>
+    </div>
+
+    <!-- Debug info -->
+    <div id="debug-info" class="debug-info" style="display: none;">
+      <strong>Debug Information:</strong><br>
+      <div id="debug-content"></div>
+    </div>
   </div>
 
   <script>
+    // Function to parse URL parameters
+    function getUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      const hash = window.location.hash.substring(1);
+      const hashParams = new URLSearchParams(hash);
+
+      const allParams = {};
+      for (const [key, value] of params) allParams[key] = value;
+      for (const [key, value] of hashParams) allParams[key] = value;
+      return allParams;
+    }
+
+    // Show debug information
+    function showDebugInfo(params) {
+      const debugContent = document.getElementById('debug-content');
+      const debugInfo = document.getElementById('debug-info');
+      let debugText = `URL: ${window.location.href}<br><br>`;
+      debugText += `Parameters found:<br>`;
+      if (Object.keys(params).length === 0) {
+        debugText += `No parameters found<br>`;
+      } else {
+        for (const [key, value] of Object.entries(params)) {
+          debugText += `${key}: ${value}<br>`;
+        }
+      }
+      debugContent.innerHTML = debugText;
+      debugInfo.style.display = 'block';
+    }
+
+    // Attempt deep link to mobile app
     function attemptDeepLink() {
       window.location.href = "mobile://verify";
     }
 
+    // Main verification logic
     function handleVerification() {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('access_token');
-      const type = params.get('type');
-      const error = params.get('error') || params.get('error_description');
+      const params = getUrlParams();
+
+      // Show debug info
+      showDebugInfo(params);
+
+      const token = params.access_token || params.token || params.confirmation_token || params.recovery_token;
+      const type = params.type;
+      const error = params.error || params.error_description;
       const messageDiv = document.getElementById('message');
 
       if (error) {
