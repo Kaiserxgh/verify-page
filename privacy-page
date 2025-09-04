@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TopNotch Mobile - Privacy Policy</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      line-height: 1.6;
+      color: #333;
+    }
+    h1, h2 {
+      color: #FFA500;
+    }
+    a {
+      color: #FF8C00;
+    }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy - TopNotch Mobile</h1>
+  <p>Effective Date: September 2025</p>
+
+  <h2>1. Information We Collect</h2>
+  <p>We collect the following information from users of TopNotch Mobile:</p>
+  <ul>
+    <li>Name and email address (for account creation and authentication via Google login)</li>
+    <li>Pet information (for managing your pet's profile and services)</li>
+  </ul>
+
+  <h2>2. How We Use Your Information</h2>
+  <p>Your information is used solely to provide and improve our services, including:</p>
+  <ul>
+    <li>Account management and login authentication</li>
+    <li>Personalized pet care features</li>
+    <li>Communications about your account and service updates</li>
+  </ul>
+
+  <h2>3. Sharing Your Information</h2>
+  <p>We do <strong>not</strong> sell your data. Your information may be shared with trusted third-party services only for:</p>
+  <ul>
+    <li>Authentication (Supabase, Google login)</li>
+    <li>Service functionality required to provide app features</li>
+  </ul>
+
+  <h2>4. User Rights</h2>
+  <p>You can request the deletion or modification of your personal information by contacting us at: <a href="mailto:callu1048@gmail.com">callu1048@gmail.com</a>.</p>
+
+  <h2>5. Updates to This Privacy Policy</h2>
+  <p>We may update this policy from time to time. The latest version will always be available at this page.</p>
+
+  <p>Thank you for trusting TopNotch Mobile with your information.</p>
+</body>
+</html>
