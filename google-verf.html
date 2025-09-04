@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Redirecting...</title>
+  <script>
+    // Grab params from the URL
+    const params = new URLSearchParams(window.location.search);
+    // Redirect into your app with deep link
+    window.location.href = "myapp://verify?" + params.toString();
+  </script>
+</head>
+<body>
+  Redirecting back to app...
+</body>
+</html>
