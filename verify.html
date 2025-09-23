@@ -1,153 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Email Verification</title>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    background: #FFE57F;
-    color: #333;
-    text-align: center;
-    padding: 20px;
-}
-.container {
-    background: white;
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    max-width: 400px;
-    width: 100%;
-}
-h1 { margin-bottom: 20px; font-size: 28px; }
-p { font-size: 16px; margin-bottom: 20px; line-height: 1.5; color: #666; }
-.success { color: #4CAF50; }
-.error { color: #f44336; }
-.button {
-    display: inline-block;
-    text-decoration: none;
-    color: #fff;
-    background-color: #4CAF50;
-    padding: 15px 30px;
-    border-radius: 25px;
-    font-weight: bold;
-    margin: 10px;
-    transition: background-color 0.3s;
-}
-.button:hover { background-color: #45a049; }
-.button.secondary { background-color: #FF8C00; }
-.button.secondary:hover { background-color: #e67e00; }
-.loading {
-    display: inline-block;
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #4CAF50;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 20px;
-}
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-.debug-info {
-    margin-top: 30px;
-    padding: 15px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    font-size: 12px;
-    text-align: left;
-    color: #666;
-    max-height: 200px;
-    overflow-y: auto;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - PetCare</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #FFE57F 0%, #FFA726 100%);
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FFE57F, #FFA726);
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: #666;
+        }
+
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .loading { color: #FF8C00; }
+
+        .button {
+            display: inline-block;
+            text-decoration: none;
+            color: #fff;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            padding: 14px 28px;
+            border-radius: 25px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .button.secondary {
+            background: linear-gradient(135deg, #FF8C00, #e67e00);
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .button.secondary:hover {
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.4);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #FF8C00;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .debug-info {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            font-size: 12px;
+            text-align: left;
+            color: #666;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            h1 { font-size: 24px; }
+            p { font-size: 14px; }
+            
+            .button {
+                display: block;
+                margin: 10px 0;
+                padding: 12px 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <div id="message">
-        <div class="loading"></div>
-        <h1>Verifying...</h1>
-        <p>Please wait while we verify your email.</p>
+    <div class="container">
+        <div id="message">
+            <div class="icon loading">⏳</div>
+            <h1 class="loading">Verifying Your Email</h1>
+            <p>Please wait while we verify your email address...</p>
+            <div class="spinner"></div>
+        </div>
+        
+        <div id="debug-info" class="debug-info" style="display: none;">
+            <strong>Debug Information:</strong><br>
+            <div id="debug-content"></div>
+        </div>
     </div>
-    <div id="debug-info" class="debug-info" style="display: none;">
-        <strong>Debug Information:</strong><br>
-        <div id="debug-content"></div>
-    </div>
-</div>
 
-<script>
-function getUrlParams() {
-    const params = new URLSearchParams(window.location.search);
-    const hash = window.location.hash.substring(1);
-    const hashParams = new URLSearchParams(hash);
-    const allParams = {};
-    for (const [key, value] of params) allParams[key] = value;
-    for (const [key, value] of hashParams) allParams[key] = value;
-    return allParams;
-}
-
-function showDebugInfo(params) {
-    const debugContent = document.getElementById('debug-content');
-    const debugInfo = document.getElementById('debug-info');
-    let debugText = `URL: ${window.location.href}<br><br>`;
-    debugText += `Parameters found:<br>`;
-    if (Object.keys(params).length === 0) {
-        debugText += `No parameters found<br>`;
-    } else {
-        for (const [key, value] of Object.entries(params)) {
-            debugText += `${key}: ${value}<br>`;
+    <script>
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const hash = window.location.hash.substring(1);
+            const hashParams = new URLSearchParams(hash);
+            const allParams = {};
+            
+            // Get search params
+            for (const [key, value] of params) {
+                allParams[key] = value;
+            }
+            
+            // Get hash params (more common for Supabase)
+            for (const [key, value] of hashParams) {
+                allParams[key] = value;
+            }
+            
+            return allParams;
         }
-    }
-    debugContent.innerHTML = debugText;
-    debugInfo.style.display = 'block';
-}
 
-function attemptDeepLink() {
-    window.location.href = "mobile://verify";
-}
+        function showDebugInfo(params) {
+            const debugContent = document.getElementById('debug-content');
+            const debugInfo = document.getElementById('debug-info');
+            
+            let debugText = `URL: ${window.location.href}<br><br>`;
+            debugText += `Parameters found:<br>`;
+            
+            if (Object.keys(params).length === 0) {
+                debugText += `No parameters found<br>`;
+            } else {
+                for (const [key, value] of Object.entries(params)) {
+                    const truncatedValue = value.length > 50 ? value.substring(0, 50) + '...' : value;
+                    debugText += `${key}: ${truncatedValue}<br>`;
+                }
+            }
 
-function handleVerification() {
-    const params = getUrlParams();
-    showDebugInfo(params);
+            debugText += `<br>Timestamp: ${new Date().toLocaleString()}<br>`;
+            
+            debugContent.innerHTML = debugText;
+            debugInfo.style.display = 'block';
+        }
 
-    const token = params.access_token || params.token || params.confirmation_token || params.recovery_token;
-    const type = params.type;
-    const error = params.error || params.error_description;
-    const messageDiv = document.getElementById('message');
+        function attemptDeepLink() {
+            console.log('Attempting to open app...');
+            
+            const deepLinks = [
+                'mobile://verify',
+                'myapp://login'
+            ];
 
-    if (error) {
-        messageDiv.innerHTML = `
-            <h1 class="error">Verification Failed</h1>
-            <p>There was an error verifying your email: ${error}</p>
-            <a href="#" class="button secondary" onclick="window.close()">Close</a>
-        `;
-        return;
-    }
+            let linkIndex = 0;
+            
+            function tryNextLink() {
+                if (linkIndex < deepLinks.length) {
+                    const link = deepLinks[linkIndex];
+                    console.log(`Trying deep link: ${link}`);
+                    window.location.href = link;
+                    linkIndex++;
+                    setTimeout(tryNextLink, 1000);
+                }
+            }
+            
+            tryNextLink();
+        }
 
-    if (token || type === 'signup') {
-        messageDiv.innerHTML = `
-            <h1 class="success">Email Verified! 🎉</h1>
-            <p>Your email has been successfully verified. You can now log in to your account.</p>
-            <a href="#" class="button" onclick="attemptDeepLink()">Open App</a>
-            <a href="#" class="button secondary" onclick="window.close()">Close</a>
-        `;
-        setTimeout(attemptDeepLink, 3000);
-    } else {
-        messageDiv.innerHTML = `
-            <h1 class="error">Invalid Link</h1>
-            <p>This verification link is invalid or has expired. Please try registering again or request a new verification email.</p>
-            <a href="#" class="button secondary" onclick="window.close()">Close</a>
-        `;
-    }
-}
+        function handleVerification() {
+            const params = getUrlParams();
+            showDebugInfo(params);
 
-document.addEventListener('DOMContentLoaded', handleVerification);
-</script>
+            // Check for verification tokens
+            const accessToken = params.access_token;
+            const refreshToken = params.refresh_token;
+            const tokenHash = params.token_hash;
+            const code = params.code;
+            const type = params.type;
+            const error = params.error || params.error_description;
+
+            const messageDiv = document.getElementById('message');
+
+            console.log('Verification parameters:', {
+                accessToken: !!accessToken,
+                refreshToken: !!refreshToken,
+                tokenHash: !!tokenHash,
+                code: !!code,
+                type: type,
+                error: error
+            });
+
+            // Handle errors first
+            if (error) {
+                messageDiv.innerHTML = `
+                    <div class="icon error">❌</div>
+                    <h1 class="error">Verification Failed</h1>
+                    <p>There was an error verifying your email: ${error}</p>
+                    <button class="button secondary" onclick="window.close()">Close</button>
+                `;
+                return;
+            }
+
+            // Check for any valid verification token
+            const hasValidToken = accessToken || refreshToken || tokenHash || code || (type === 'signup');
+
+            if (hasValidToken) {
+                messageDiv.innerHTML = `
+                    <div class="icon success">✅</div>
+                    <h1 class="success">Email Verified Successfully!</h1>
+                    <p>Welcome to PetCare! Your email has been confirmed and your account is now active.</p>
+                    <p style="color: #4CAF50; font-weight: 600;">You can now log in to your account.</p>
+                    <button class="button" onclick="attemptDeepLink()">Open PetCare App</button>
+                    <button class="button secondary" onclick="window.close()">Close This Page</button>
+                `;
+                
+                // Auto-attempt deep link after 3 seconds
+                setTimeout(() => {
+                    console.log('Auto-attempting deep link...');
+                    attemptDeepLink();
+                }, 3000);
+                
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="icon error">❌</div>
+                    <h1 class="error">Invalid Verification Link</h1>
+                    <p>This verification link is invalid or has expired. This can happen if:</p>
+                    <ul style="text-align: left; margin: 20px 0; padding-left: 20px;">
+                        <li>The link is older than 24 hours</li>
+                        <li>The link has already been used</li>
+                        <li>The verification tokens are missing</li>
+                    </ul>
+                    <p>Please try registering again or request a new verification email.</p>
+                    <button class="button secondary" onclick="window.close()">Close</button>
+                `;
+            }
+        }
+
+        // Make attemptDeepLink available globally
+        window.attemptDeepLink = attemptDeepLink;
+
+        // Start verification when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded, starting verification...');
+            setTimeout(handleVerification, 1000);
+        });
+    </script>
 </body>
 </html>
