@@ -198,8 +198,8 @@
             console.log('Attempting to open app...');
             
             const deepLinks = [
-                'mobile://verify',
-                'myapp://login'
+                'mobile://',  
+                'myapp://'    
             ];
 
             let linkIndex = 0;
@@ -286,10 +286,8 @@
             }
         }
 
-        // Make attemptDeepLink available globally
         window.attemptDeepLink = attemptDeepLink;
 
-        // Start verification when page loads
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Page loaded, starting verification...');
             setTimeout(handleVerification, 1000);
