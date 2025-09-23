@@ -197,31 +197,17 @@
         function attemptDeepLink() {
             console.log('Attempting to open app...');
             
-            const deepLinks = [
-                'mobile://',  
-                'myapp://'    
-            ];
-
-            let linkIndex = 0;
+            window.location.href = 'mobile://';
             
-            function tryNextLink() {
-                if (linkIndex < deepLinks.length) {
-                    const link = deepLinks[linkIndex];
-                    console.log(`Trying deep link: ${link}`);
-                    window.location.href = link;
-                    linkIndex++;
-                    setTimeout(tryNextLink, 1000);
-                }
-            }
-            
-            tryNextLink();
+            setTimeout(() => {
+                alert('Please open your PetCare app manually. Your email is now verified and you can log in!');
+            }, 3000);
         }
 
         function handleVerification() {
             const params = getUrlParams();
             showDebugInfo(params);
 
-            // Check for verification tokens
             const accessToken = params.access_token;
             const refreshToken = params.refresh_token;
             const tokenHash = params.token_hash;
@@ -251,7 +237,6 @@
                 return;
             }
 
-            // Check for any valid verification token
             const hasValidToken = accessToken || refreshToken || tokenHash || code || (type === 'signup');
 
             if (hasValidToken) {
@@ -272,17 +257,19 @@
                 
             } else {
                 messageDiv.innerHTML = `
-                    <div class="icon error">❌</div>
-                    <h1 class="error">Invalid Verification Link</h1>
-                    <p>This verification link is invalid or has expired. This can happen if:</p>
-                    <ul style="text-align: left; margin: 20px 0; padding-left: 20px;">
-                        <li>The link is older than 24 hours</li>
-                        <li>The link has already been used</li>
-                        <li>The verification tokens are missing</li>
-                    </ul>
-                    <p>Please try registering again or request a new verification email.</p>
-                    <button class="button secondary" onclick="window.close()">Close</button>
+                    <div class="icon">ℹ️</div>
+                    <h1 style="color: #FF8C00;">Account Already Verified</h1>
+                    <p>Your email address has already been verified! This verification link has been used before.</p>
+                    <p style="color: #4CAF50; font-weight: 600;">Your account is active and ready to use.</p>
+                    <p>You can now log in to your PetCare account with your email and password.</p>
+                    <button class="button" onclick="attemptDeepLink()">Open PetCare App</button>
+                    <button class="button secondary" onclick="window.close()">Close This Page</button>
                 `;
+                
+                setTimeout(() => {
+                    console.log('Auto-attempting deep link for verified user...');
+                    attemptDeepLink();
+                }, 3000);
             }
         }
 
