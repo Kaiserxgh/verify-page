@@ -158,13 +158,11 @@
             const hash = window.location.hash.substring(1);
             const hashParams = new URLSearchParams(hash);
             const allParams = {};
-            
-            // Get search params
+
             for (const [key, value] of params) {
                 allParams[key] = value;
             }
-            
-            // Get hash params (more common for Supabase)
+
             for (const [key, value] of hashParams) {
                 allParams[key] = value;
             }
@@ -208,6 +206,7 @@
             const params = getUrlParams();
             showDebugInfo(params);
 
+            // Check for verification tokens
             const accessToken = params.access_token;
             const refreshToken = params.refresh_token;
             const tokenHash = params.token_hash;
@@ -226,13 +225,40 @@
                 error: error
             });
 
-            // Handle errors first
             if (error) {
+                let errorTitle = "Verification Failed";
+                let errorMessage = `There was an error verifying your email: ${error}`;
+                let errorIcon = "❌";
+                let errorClass = "error";
+                
+                // Check for specific error types
+                if (error === 'access_denied' && (params.error_code === 'otp_expired' || error.includes('expired'))) {
+                    errorTitle = "Link Already Used";
+                    errorMessage = "This verification link has already been used or has expired. Your email may already be verified.";
+                    errorIcon = "ℹ️";
+                    errorClass = "loading"; // Orange color
+                } else if (error.includes('expired') || params.error_description?.includes('expired')) {
+                    errorTitle = "Link Expired";
+                    errorMessage = "This verification link has expired. Verification links are only valid for 24 hours.";
+                    errorIcon = "⏰";
+                    errorClass = "loading"; // Orange color
+                } else if (error.includes('invalid') || params.error_description?.includes('invalid')) {
+                    errorTitle = "Invalid Link";
+                    errorMessage = "This verification link is invalid or malformed.";
+                    errorIcon = "❌";
+                    errorClass = "error";
+                }
+
                 messageDiv.innerHTML = `
-                    <div class="icon error">❌</div>
-                    <h1 class="error">Verification Failed</h1>
-                    <p>There was an error verifying your email: ${error}</p>
-                    <button class="button secondary" onclick="window.close()">Close</button>
+                    <div class="icon ${errorClass}">${errorIcon}</div>
+                    <h1 class="${errorClass}">${errorTitle}</h1>
+                    <p>${errorMessage}</p>
+                    <p style="color: #4CAF50; margin-top: 20px;">
+                        <strong>Good news:</strong> If you registered recently, your email is likely already verified! 
+                        Try logging in to your PetCare account.
+                    </p>
+                    <button class="button" onclick="attemptDeepLink()">Open PetCare App</button>
+                    <button class="button secondary" onclick="window.close()">Close This Page</button>
                 `;
                 return;
             }
@@ -249,7 +275,6 @@
                     <button class="button secondary" onclick="window.close()">Close This Page</button>
                 `;
                 
-                // Auto-attempt deep link after 3 seconds
                 setTimeout(() => {
                     console.log('Auto-attempting deep link...');
                     attemptDeepLink();
