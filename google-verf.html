@@ -155,19 +155,44 @@
                 errorEl.style.display = 'none';
                 spinnerEl.style.display = 'none';
                 
-                // Try to close the window after success
+                // Try multiple methods to close the browser tab
                 setTimeout(() => {
-                    try {
-                        window.close();
-                        console.log('Attempted to close window after success');
-                    } catch (e) {
-                        console.log('Could not close window:', e);
-                    }
+                    closeCurrentTab();
                 }, 1500);
             } else {
                 statusEl.textContent = message;
                 errorEl.style.display = 'none';
                 successEl.style.display = 'none';
+            }
+        }
+
+        function closeCurrentTab() {
+            try {
+                // Method 1: Try to close if opened by script
+                if (window.opener) {
+                    console.log('Window has opener, attempting to close...');
+                    window.close();
+                    return;
+                }
+                
+                // Method 2: Try to close current tab (may not work due to security)
+                window.close();
+                
+                // Method 3: Try to go back in history
+                if (window.history.length > 1) {
+                    window.history.back();
+                }
+                
+                // Method 4: Replace current page with blank
+                setTimeout(() => {
+                    window.location.replace('about:blank');
+                }, 500);
+                
+                console.log('Attempted various close methods');
+            } catch (e) {
+                console.log('Could not close window automatically:', e);
+                // If we can't close, try to hide the content
+                document.body.innerHTML = '<div style="text-align: center; padding: 50px; font-family: sans-serif;"><h2>You can now close this tab</h2><p>Authentication completed successfully.</p></div>';
             }
         }
 
@@ -209,7 +234,7 @@
         }
 
         function buildDeepLink(tokens) {
-            // Create deep link to your app
+            // Use the updated deep link scheme
             const deepLinkBase = 'mobile://oauth-callback';
             const params = new URLSearchParams();
             
@@ -240,11 +265,7 @@
                         
                         // Close window after showing cancellation message
                         setTimeout(() => {
-                            try {
-                                window.close();
-                            } catch (e) {
-                                console.log('Could not close window after cancellation');
-                            }
+                            closeCurrentTab();
                         }, 2000);
                         return;
                     }
@@ -286,28 +307,39 @@
                         iframe.src = deepLink;
                         document.body.appendChild(iframe);
                         console.log('Attempted redirect via iframe');
+                        
+                        // Remove iframe after attempt
+                        setTimeout(() => {
+                            if (iframe.parentNode) {
+                                iframe.parentNode.removeChild(iframe);
+                            }
+                        }, 1000);
                     } catch (e) {
                         console.error('Iframe redirect failed:', e);
                     }
                 }, 100);
                 
-                // Method 3: Try opening in new tab and close current window
+                // Method 3: Try opening in new window and close current
                 setTimeout(() => {
                     try {
-                        window.open(deepLink, '_self');
-                        console.log('Attempted redirect via window.open');
-                        
-                        // Try to close this window after redirect
-                        setTimeout(() => {
-                            try {
-                                window.close();
-                                console.log('Attempted to close redirect window');
-                            } catch (closeError) {
-                                console.log('Could not close window:', closeError);
-                            }
-                        }, 500);
+                        // For mobile browsers, try to replace current location
+                        window.location.replace(deepLink);
+                        console.log('Attempted redirect via window.location.replace');
                     } catch (e) {
-                        console.error('Window.open redirect failed:', e);
+                        console.error('Window.location.replace failed:', e);
+                        
+                        // Try window.open as last resort
+                        try {
+                            const newWindow = window.open(deepLink, '_self');
+                            console.log('Attempted redirect via window.open');
+                            
+                            // Close this window after a short delay
+                            setTimeout(() => {
+                                closeCurrentTab();
+                            }, 1000);
+                        } catch (openError) {
+                            console.error('Window.open redirect failed:', openError);
+                        }
                     }
                 }, 500);
                 
@@ -322,11 +354,7 @@
                         window.location.href = deepLink;
                         
                         setTimeout(() => {
-                            try {
-                                window.close();
-                            } catch (closeError) {
-                                console.log('Could not close window after manual link');
-                            }
+                            closeCurrentTab();
                         }, 1000);
                     };
                 }, 3000);
@@ -334,21 +362,6 @@
             } catch (error) {
                 console.error('Redirect attempt failed:', error);
                 updateStatus('Failed to process authentication data', 'error');
-            }
-        }
-
-        // Attempt to close window if this is just a callback page
-        function attemptToCloseWindow() {
-            try {
-                // Check if we can close the window (only works if opened by script)
-                if (window.opener) {
-                    console.log('Window has opener, attempting to close...');
-                    window.close();
-                } else {
-                    console.log('Window has no opener, cannot auto-close');
-                }
-            } catch (e) {
-                console.log('Could not auto-close window:', e);
             }
         }
 
@@ -367,16 +380,31 @@
         // Try to close window on beforeunload (when redirecting away)
         window.addEventListener('beforeunload', function() {
             console.log('Page unloading, attempting to close window...');
-            attemptToCloseWindow();
+        });
+
+        // Listen for visibility change to detect when user switches back to app
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                console.log('Page became hidden, user likely switched to app');
+                setTimeout(() => {
+                    closeCurrentTab();
+                }, 2000);
+            }
         });
 
         // Listen for message from parent window (if in popup)
         window.addEventListener('message', function(event) {
             console.log('Received message:', event);
             if (event.data === 'close') {
-                window.close();
+                closeCurrentTab();
             }
         });
+
+        // Auto-close after 10 seconds as final fallback
+        setTimeout(() => {
+            console.log('Auto-closing after timeout');
+            closeCurrentTab();
+        }, 10000);
     </script>
 </body>
 </html>
