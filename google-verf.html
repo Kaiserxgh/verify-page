@@ -1,15 +1,187 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Redirecting...</title>
-  <script>
-    // Grab params from the URL
-    const params = new URLSearchParams(window.location.search);
-    // Redirect into your app with deep link
-    window.location.href = "myapp://verify?" + params.toString();
-  </script>
+    <title>Google Sign In - Redirecting</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-  Redirecting back to app...
+    <div class="container">
+        <div class="spinner"></div>
+        <h2>Completing Google Sign In...</h2>
+        <p>Please wait while we redirect you back to the app.</p>
+        <p><small id="status">Processing authentication...</small></p>
+    </div>
+
+    <script>
+        console.log('Google OAuth redirect page loaded');
+        console.log('Current URL:', window.location.href);
+        
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        function getTokensFromUrl() {
+            const hash = window.location.hash.substring(1);
+            const search = window.location.search.substring(1);
+            
+            // Try hash first (implicit flow)
+            let params = new URLSearchParams(hash);
+            if (!params.get('access_token') && search) {
+                // Try search params (authorization code flow)
+                params = new URLSearchParams(search);
+            }
+            
+            console.log('Hash params:', hash);
+            console.log('Search params:', search);
+            
+            return {
+                access_token: params.get('access_token'),
+                refresh_token: params.get('refresh_token'),
+                expires_in: params.get('expires_in'),
+                expires_at: params.get('expires_at'),
+                token_type: params.get('token_type'),
+                provider_token: params.get('provider_token'),
+                provider_refresh_token: params.get('provider_refresh_token'),
+                code: params.get('code'),
+                error: params.get('error'),
+                error_description: params.get('error_description')
+            };
+        }
+
+        function buildRedirectUrl(tokens) {
+            // Create URL params from tokens
+            const validTokens = {};
+            Object.keys(tokens).forEach(key => {
+                if (tokens[key] !== null && tokens[key] !== undefined) {
+                    validTokens[key] = tokens[key];
+                }
+            });
+            
+            const params = new URLSearchParams(validTokens).toString();
+            return params;
+        }
+
+        function redirectToApp(tokens) {
+            const params = buildRedirectUrl(tokens);
+            
+            // Try multiple redirect schemes for Expo Go
+            const redirectUrls = [
+                `exp://192.168.1.15:8081/--/redirect?${params}`,
+                `mobile://auth-callback?${params}`,
+                `https://auth.expo.io/@kaiserxgh/mobile?${params}`
+            ];
+            
+            console.log('Attempting redirects with params:', params);
+            
+            let currentIndex = 0;
+            
+            function tryNextRedirect() {
+                if (currentIndex < redirectUrls.length) {
+                    const url = redirectUrls[currentIndex];
+                    console.log(`Trying redirect ${currentIndex + 1}:`, url);
+                    updateStatus(`Trying redirect option ${currentIndex + 1}...`);
+                    
+                    // Try to redirect
+                    window.location.href = url;
+                    
+                    currentIndex++;
+                    
+                    // If redirect doesn't work, try next one after 3 seconds
+                    setTimeout(tryNextRedirect, 3000);
+                } else {
+                    // All redirects failed, show manual instructions
+                    updateStatus('Please manually return to the app');
+                    document.querySelector('.container').innerHTML = `
+                        <h2>Sign In Completed!</h2>
+                        <p>Please manually return to your app to continue.</p>
+                        <p><small>The automatic redirect didn't work, but your authentication was successful.</small></p>
+                        <button onclick="copyTokens()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: white; color: #667eea; border: none; border-radius: 5px; cursor: pointer;">
+                            Copy Auth Data
+                        </button>
+                    `;
+                }
+            }
+            
+            // Start trying redirects
+            tryNextRedirect();
+        }
+
+        function copyTokens() {
+            const tokens = getTokensFromUrl();
+            const params = buildRedirectUrl(tokens);
+            navigator.clipboard.writeText(params).then(() => {
+                alert('Authentication data copied to clipboard');
+            });
+        }
+
+        // Main execution
+        try {
+            const tokens = getTokensFromUrl();
+            
+            if (tokens.error) {
+                console.error('OAuth error:', tokens.error, tokens.error_description);
+                updateStatus(`Error: ${tokens.error_description || tokens.error}`);
+                document.querySelector('.container').innerHTML = `
+                    <h2>Sign In Error</h2>
+                    <p>There was an error with Google sign in:</p>
+                    <p><strong>${tokens.error_description || tokens.error}</strong></p>
+                    <p><small>Please return to the app and try again.</small></p>
+                `;
+            } else if (tokens.access_token || tokens.code) {
+                console.log('Valid tokens found, redirecting...');
+                updateStatus('Authentication successful, redirecting...');
+                
+                // Wait a moment to show the success message
+                setTimeout(() => {
+                    redirectToApp(tokens);
+                }, 1500);
+                
+            } else {
+                console.log('No tokens found in URL');
+                updateStatus('No authentication data found');
+                document.querySelector('.container').innerHTML = `
+                    <h2>No Authentication Data</h2>
+                    <p>No sign-in information was found.</p>
+                    <p><small>Please return to the app and try signing in again.</small></p>
+                `;
+            }
+        } catch (error) {
+            console.error('Redirect page error:', error);
+            updateStatus('An error occurred processing the sign in');
+        }
+    </script>
 </body>
 </html>
