@@ -182,19 +182,40 @@
             border: 1px solid #f5c6cb;
         }
 
+        .app-links {
+            margin-top: 20px;
+        }
+
         .app-link {
-            display: inline-block;
-            margin-top: 15px;
+            display: block;
+            margin: 10px 0;
             padding: 12px 24px;
             background: #007AFF;
             color: white;
             text-decoration: none;
             border-radius: 8px;
             font-weight: 500;
+            transition: background 0.3s;
         }
 
         .app-link:hover {
             background: #0056CC;
+        }
+
+        .app-link.primary {
+            background: #FFD700;
+            color: #000;
+        }
+
+        .app-link.primary:hover {
+            background: #FFA500;
+        }
+
+        .help-text {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
         }
     </style>
 </head>
@@ -244,16 +265,35 @@
         </form>
 
         <div id="successSection" style="display: none;">
-            <p>Your password has been successfully updated!</p>
-            <a href="mobile://home" class="app-link" id="openApp">Open TopNotch Pet Care App</a>
-            <p style="margin-top: 15px; font-size: 14px; color: #666;">
-                If the app doesn't open automatically, please open it manually from your device.
+            <p><strong>Success!</strong> Your password has been updated.</p>
+            <div class="app-links">
+                <a href="mobile://ResetPassword" class="app-link primary" id="openAppMobile">Open TopNotch Pet Care App</a>
+                <a href="myapp://login" class="app-link" id="openAppMyApp">Alternative App Link</a>
+            </div>
+            <p class="help-text">
+                Click the button above to return to the app. If it doesn't work automatically, 
+                please open the TopNotch Pet Care app manually from your device's home screen.
             </p>
         </div>
     </div>
 
     <script>
-        // Initialize Supabase
+        // Get URL parameters to extract access_token and refresh_token
+        // Check both hash and search params for tokens
+        let urlParams = new URLSearchParams(window.location.hash.substring(1));
+        let accessToken = urlParams.get('access_token');
+        let refreshToken = urlParams.get('refresh_token');
+        let type = urlParams.get('type');
+
+        // If not found in hash, check search params
+        if (!accessToken || !refreshToken) {
+            urlParams = new URLSearchParams(window.location.search);
+            accessToken = accessToken || urlParams.get('access_token');
+            refreshToken = refreshToken || urlParams.get('refresh_token');
+            type = type || urlParams.get('type');
+        }
+
+        // Initialize Supabase - REPLACE THESE WITH YOUR ACTUAL VALUES
         const supabaseUrl = 'YOUR_SUPABASE_URL'; // Replace with your actual Supabase URL
         const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your actual Supabase anon key
         const supabase = supabaseLib.createClient(supabaseUrl, supabaseAnonKey);
@@ -281,7 +321,7 @@
         function updateRequirements(password) {
             if (password.length === 0) {
                 requirements.style.display = 'none';
-                return;
+                return false;
             }
 
             requirements.style.display = 'block';
@@ -339,6 +379,14 @@
             hideMessage();
 
             try {
+                // Set the session first if we have tokens
+                if (accessToken && refreshToken) {
+                    await supabase.auth.setSession({
+                        access_token: accessToken,
+                        refresh_token: refreshToken
+                    });
+                }
+
                 const { error } = await supabase.auth.updateUser({
                     password: password
                 });
@@ -354,12 +402,29 @@
 
                 // Try to open the app after a short delay
                 setTimeout(() => {
-                    window.location.href = 'mobile://home';
+                    // Try multiple deep link options
+                    const deepLinks = [
+                        'mobile://ResetPassword',
+                        'myapp://login',
+                        'mobile://home'
+                    ];
+                    
+                    deepLinks.forEach((link, index) => {
+                        setTimeout(() => {
+                            window.location.href = link;
+                        }, index * 1000);
+                    });
                 }, 2000);
 
             } catch (error) {
                 console.error('Password update error:', error);
-                showMessage(error.message || 'Failed to update password. Please try again.', 'error');
+                let errorMessage = 'Failed to update password. Please try again.';
+                
+                if (error.message?.includes('Invalid token')) {
+                    errorMessage = 'Reset link has expired. Please request a new password reset.';
+                }
+                
+                showMessage(errorMessage, 'error');
             } finally {
                 // Reset loading state
                 loading.style.display = 'none';
@@ -368,27 +433,67 @@
             }
         });
 
-        // Check if user has valid session on page load
-        async function checkSession() {
+        // Check if user has valid reset tokens on page load
+        async function checkResetTokens() {
+            console.log('URL hash:', window.location.hash);
+            console.log('URL search:', window.location.search);
+            console.log('Checking reset tokens...', {
+                accessToken: accessToken ? 'present' : 'missing',
+                refreshToken: refreshToken ? 'present' : 'missing',
+                type
+            });
+
+            // For development/testing - allow bypassing token check
+            // Remove this in production!
+            if (!accessToken && !refreshToken) {
+                console.log('No tokens found, enabling form for testing');
+                showMessage('⚠️ Testing mode - no valid reset tokens found', 'error');
+                // Don't hide form - allow testing
+                return;
+            }
+
+            if (!accessToken || !refreshToken || type !== 'recovery') {
+                showMessage('Invalid or expired reset link. Please request a new password reset from the app.', 'error');
+                form.style.display = 'none';
+                return;
+            }
+
             try {
-                const { data: { session }, error } = await supabase.auth.getSession();
+                // Set the session to validate the tokens
+                const { data, error } = await supabase.auth.setSession({
+                    access_token: accessToken,
+                    refresh_token: refreshToken
+                });
                 
-                if (error || !session) {
-                    showMessage('Invalid or expired reset link. Please request a new password reset.', 'error');
-                    form.style.display = 'none';
-                    return;
+                if (error || !data.session) {
+                    throw new Error('Invalid tokens');
                 }
 
-                console.log('Valid reset session found');
+                console.log('Valid reset session established');
+                showMessage('Ready to reset your password', 'success');
+                
             } catch (error) {
-                console.error('Session check error:', error);
-                showMessage('Something went wrong. Please try again.', 'error');
+                console.error('Session validation error:', error);
+                showMessage('Reset link has expired or is invalid. Please request a new password reset.', 'error');
                 form.style.display = 'none';
             }
         }
 
-        // Check session when page loads
-        checkSession();
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            checkResetTokens();
+            
+            // Handle app link clicks
+            document.getElementById('openAppMobile')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'mobile://ResetPassword';
+            });
+            
+            document.getElementById('openAppMyApp')?.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = 'myapp://login';
+            });
+        });
     </script>
 </body>
 </html>
